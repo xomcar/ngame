@@ -61,20 +61,20 @@ GetWindowDimension(HWND Window)
 }
 
 internal void
-RenderGradient(win32_offscreen_buffer Buffer, int XOffSet, int YOffset)
+RenderGradient(win32_offscreen_buffer* Buffer, int XOffSet, int YOffset)
 {
-    u8* Row = (u8*) Buffer.Memory;
-    for (int Y = 0; Y < Buffer.Height; ++Y)
+    u8* Row = (u8*) Buffer->Memory;
+    for (int Y = 0; Y < Buffer->Height; ++Y)
     {
         u32* Pixel = (u32*) Row;
-        for (int X = 0; X < Buffer.Width; ++X)
+        for (int X = 0; X < Buffer->Width; ++X)
         {
             u8 Blue  = (X + XOffSet);
             u8 Green = (Y + YOffset);
             *Pixel   = ((Green << 8) | Blue);
             Pixel++;
         }
-        Row += Buffer.Pitch;
+        Row += Buffer->Pitch;
     }
 }
 
@@ -103,10 +103,10 @@ Win32PopulateBuffer(win32_offscreen_buffer* Buffer, int Width, int Height)
 }
 
 internal void
-Win32DisplayBufferInWindow(HDC                    DeviceContext,
-                           int                    WindowWidth,
-                           int                    WindowHeight,
-                           win32_offscreen_buffer Buffer)
+Win32DisplayBufferInWindow(HDC                     DeviceContext,
+                           int                     WindowWidth,
+                           int                     WindowHeight,
+                           win32_offscreen_buffer* Buffer)
 {
     // TODO: correct aspect ratio
     StretchDIBits(DeviceContext,
@@ -118,10 +118,10 @@ Win32DisplayBufferInWindow(HDC                    DeviceContext,
                   WindowHeight,
                   0,
                   0,
-                  Buffer.Width,
-                  Buffer.Height,
-                  Buffer.Memory,
-                  &Buffer.Info,
+                  Buffer->Width,
+                  Buffer->Height,
+                  Buffer->Memory,
+                  &Buffer->Info,
                   DIB_RGB_COLORS,
                   SRCCOPY);
 }
@@ -192,7 +192,7 @@ Win32MainWindowCallback(HWND Window, UINT Message, WPARAM wParameter, LPARAM lPa
 
             win32_window_dimension Dimension = GetWindowDimension(Window);
             Win32DisplayBufferInWindow(
-                DeviceContext, Dimension.Width, Dimension.Height, GlobalBackBuffer);
+                DeviceContext, Dimension.Width, Dimension.Height, &GlobalBackBuffer);
             EndPaint(Window, &Paint);
         }
         break;
@@ -299,11 +299,11 @@ WinMain(HINSTANCE Instance, HINSTANCE PrevInstance, LPSTR CommandLine, int ShowC
                         // controller no available
                     }
                 }
-                RenderGradient(GlobalBackBuffer, xOffset, yOffset);
+                RenderGradient(&GlobalBackBuffer, xOffset, yOffset);
 
                 win32_window_dimension Dimension = GetWindowDimension(Window);
                 Win32DisplayBufferInWindow(
-                    DeviceContext, Dimension.Width, Dimension.Height, GlobalBackBuffer);
+                    DeviceContext, Dimension.Width, Dimension.Height, &GlobalBackBuffer);
                 ++xOffset;
             }
         }
