@@ -40,7 +40,11 @@ global_variable x_input_set_state* XInputSetState_ = XInputSetStateStub;
 internal void
 Win32LoadXInput(void)
 {
-    HMODULE XInputLibrary = LoadLibraryA("xinput1_3.dll");
+    HMODULE XInputLibrary = LoadLibraryA("xinput1_4.dll");
+    if (!XInputLibrary)
+    {
+        HMODULE XInputLibrary = LoadLibraryA("xinput1_3.dll");
+    }
     if (XInputLibrary)
     {
         XInputGetState = (x_input_get_state*) GetProcAddress(XInputLibrary, "XInputGetState");
@@ -182,6 +186,12 @@ Win32MainWindowCallback(HWND Window, UINT Message, WPARAM wParameter, LPARAM lPa
                 }
                 else if (VKCode == VK_SPACE) {}
             }
+            typedef i32 bool32;
+            bool32      AltKeyWasDown = (lParameter & (1 << 29));
+            if ((VKCode == VK_F4) && AltKeyWasDown)
+            {
+                GlobalRunning = false;
+            }
         }
         break;
 
@@ -261,6 +271,7 @@ WinMain(HINSTANCE Instance, HINSTANCE PrevInstance, LPSTR CommandLine, int ShowC
                     DispatchMessage(&Message);
                 }
 
+                // TODO: GetState is bugged and hangs for milliseconds if no controller is plugged
                 for (DWORD ControllerIndex = 0; ControllerIndex < XUSER_MAX_COUNT;
                      ++ControllerIndex)
                 {
