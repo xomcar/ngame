@@ -1,3 +1,6 @@
+#ifndef TYPE_H
+#define TYPE_H
+
 #include <stdint.h>
 #define local_persist static
 #define global_variable static
@@ -19,3 +22,5 @@ typedef float f64;
 typedef i32 bool32;
 
 f32 Pi32 = 3.14159265359;
+
+#endif

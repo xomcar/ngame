@@ -1,26 +1,25 @@
-#ifndef NGAME_H
-#define NGAME_H
+#include "ngame.h"
 
-/* 
-    Services provided by the game to the platform layer:
-*/
-
-// needs timing, input, bitmap to output and sound to use
-
-struct game_offscreen_buffer
+internal void
+RenderGradient(game_offscreen_buffer* Buffer, int XOffSet, int YOffset)
 {
-    BITMAPINFO Info;
-    void*      Memory;
-    int        Width;
-    int        Height;
-    int        Pitch;
-    int        BytesPerPixel;
-};
+    u8* Row = (u8*) Buffer->Memory;
+    for (int Y = 0; Y < Buffer->Height; ++Y)
+    {
+        u32* Pixel = (u32*) Row;
+        for (int X = 0; X < Buffer->Width; ++X)
+        {
+            u8 Blue  = (X + XOffSet);
+            u8 Green = (Y + YOffset);
+            *Pixel   = ((Green << 8) | Blue);
+            Pixel++;
+        }
+        Row += Buffer->Pitch;
+    }
+}
 
-internal void GameUpdateAndRender(game_offscreen_buffer *Buffer, int XOffset, int YOffset);
-
-/*
-    Services the platform layer provides to the game:
-*/
-
-#endif
+internal void
+GameUpdateAndRender(game_offscreen_buffer* Buffer, int XOffset, int YOffset)
+{
+    RenderGradient(Buffer, XOffset, YOffset);
+}

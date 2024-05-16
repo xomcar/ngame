@@ -151,8 +151,7 @@ Win32FillSoundBuffer(win32_sound_output* SoundOutput, DWORD ByteToLock, DWORD By
     DWORD Region1Size;
     VOID* Region2;
     DWORD Region2Size;
-    if (SUCCEEDED(
-            GlobalSoundBuffer->Lock(ByteToLock, BytesToWrite, &Region1, &Region1Size, &Region2, &Region2Size, 0)))
+    if (SUCCEEDED(GlobalSoundBuffer->Lock(ByteToLock, BytesToWrite, &Region1, &Region1Size, &Region2, &Region2Size, 0)))
     {
         // TODO: assert region1/region2 size are valid (must be multiple of 32 bit due to 2ch * 16bit)
         i16*  SampleOut          = (i16*) Region1;
@@ -423,12 +422,12 @@ WinMain(HINSTANCE Instance, HINSTANCE PrevInstance, LPSTR CommandLine, int ShowC
                 }
 
                 game_offscreen_buffer Buffer = {};
-                Buffer.Memory = GlobalBackBuffer.Memory;
-                Buffer.Width = GlobalBackBuffer.Width;
-                Buffer.Height = GlobalBackBuffer.Height;
-                Buffer.Pitch = GlobalBackBuffer.Pitch;
+                Buffer.Memory                = GlobalBackBuffer.Memory;
+                Buffer.Width                 = GlobalBackBuffer.Width;
+                Buffer.Height                = GlobalBackBuffer.Height;
+                Buffer.Pitch                 = GlobalBackBuffer.Pitch;
 
-                GameUpdateAndRender(Buffer, xOffset, yOffset);
+                GameUpdateAndRender(&Buffer, xOffset, yOffset);
 
                 // Direct sound output test
                 DWORD PlayCursor;
@@ -462,8 +461,6 @@ WinMain(HINSTANCE Instance, HINSTANCE PrevInstance, LPSTR CommandLine, int ShowC
                 win32_window_dimension Dimension = GetWindowDimension(Window);
                 Win32DisplayBufferInWindow(DeviceContext, Dimension.Width, Dimension.Height, &GlobalBackBuffer);
                 ++xOffset;
-
-                MainLoop();
 
                 QueryPerformanceCounter(&EndTime);
             }
