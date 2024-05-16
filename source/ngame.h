@@ -11,16 +11,27 @@
 
 struct game_offscreen_buffer
 {
-    void* Memory;
-    int   Width;
-    int   Height;
-    int   Pitch;
-    int   BytesPerPixel;
+    void* memory;
+    int   width;
+    int   height;
+    int   pitch;
+    int   bytesPerPixel;
+};
+
+struct game_sound_buffer
+{
+    i16* samples;
+    int  sampleCount;
+    int  samplesPerSecond;
 };
 
 internal void
-GameUpdateAndRender(game_offscreen_buffer* Buffer, int XOffset, int YOffset);
+GameUpdateAndRender(game_offscreen_buffer* buffer, game_sound_buffer* soundBuffer, int xOffset, int yOffset, int toneHz);
 
+
+// TODO: allow sample offset control
+internal void
+GameOutputSound(game_sound_buffer* SoundBuffer, int toneHz);
 /*
     Services the platform layer provides to the game:
 */

@@ -1,25 +1,45 @@
 #include "ngame.h"
 
 internal void
-RenderGradient(game_offscreen_buffer* Buffer, int XOffSet, int YOffset)
+RenderGradient(game_offscreen_buffer* buffer, int xOffSet, int yOffset)
 {
-    u8* Row = (u8*) Buffer->Memory;
-    for (int Y = 0; Y < Buffer->Height; ++Y)
+    u8* row = (u8*) buffer->memory;
+    for (int y = 0; y < buffer->height; ++y)
     {
-        u32* Pixel = (u32*) Row;
-        for (int X = 0; X < Buffer->Width; ++X)
+        u32* pixel = (u32*) row;
+        for (int x = 0; x < buffer->width; ++x)
         {
-            u8 Blue  = (X + XOffSet);
-            u8 Green = (Y + YOffset);
-            *Pixel   = ((Green << 8) | Blue);
-            Pixel++;
+            u8 blue  = (x + xOffSet);
+            u8 green = (y + yOffset);
+            *pixel   = ((green << 8) | blue);
+            pixel++;
         }
-        Row += Buffer->Pitch;
+        row += buffer->pitch;
     }
 }
 
 internal void
-GameUpdateAndRender(game_offscreen_buffer* Buffer, int XOffset, int YOffset)
+GameOutputSound(game_sound_buffer* soundBuffer, int toneHz)
 {
-    RenderGradient(Buffer, XOffset, YOffset);
+    local_persist f32 tSine;
+    i16               toneVolume = 3000;
+    int               wavePeriod = soundBuffer->samplesPerSecond / toneHz;
+
+    i16* sampleOut = (i16*) soundBuffer->samples;
+    for (DWORD sampleIndex = 0; sampleIndex < soundBuffer->sampleCount; ++sampleIndex)
+    {
+        f32 sineValue   = sinf(tSine);
+        i16 sampleValue = (i16) (sineValue * toneVolume);
+        *sampleOut++    = sampleValue;
+        *sampleOut++    = sampleValue;
+        tSine += 2.0f * Pi32 / (f32) wavePeriod;
+    }
+}
+
+internal void
+GameUpdateAndRender(
+    game_offscreen_buffer* videoBuffer, game_sound_buffer* soundBuffer, int xOffset, int yOffset, int toneHz)
+{
+    GameOutputSound(soundBuffer, toneHz);
+    RenderGradient(videoBuffer, xOffset, yOffset);
 }
