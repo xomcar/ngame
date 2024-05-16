@@ -21,6 +21,6 @@ typedef float f64;
 
 typedef i32 bool32;
 
-f32 Pi32 = 3.14159265359;
+f32 Pi32 = 3.14159265359f;
 
 #endif

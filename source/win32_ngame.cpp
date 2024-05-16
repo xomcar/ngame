@@ -469,8 +469,8 @@ WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR commandLine, int showC
                 bool32 soundIsValid = false;
                 if (SUCCEEDED(gSoundBuffer->GetCurrentPosition(&playCursor, &writeCursor)))
                 {
-                    byteToLock = (soundOutput.runningSampleIndex * soundOutput.bytesPerSample)
-                                 % soundOutput.secondaryBufferSize;
+                    DWORD byteToLock = (soundOutput.runningSampleIndex * soundOutput.bytesPerSample)
+                                       % soundOutput.secondaryBufferSize;
                     targetCursor = (playCursor + (soundOutput.latencySampleCount * soundOutput.bytesPerSample))
                                    % soundOutput.secondaryBufferSize;
                     if (byteToLock > targetCursor)
