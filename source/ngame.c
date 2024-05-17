@@ -9,8 +9,8 @@ RenderGradient(game_offscreen_buffer* buffer, int xOffSet, int yOffset)
         u32* pixel = (u32*) row;
         for (int x = 0; x < buffer->width; ++x)
         {
-            u8 blue  = (x + xOffSet);
-            u8 green = (y + yOffset);
+            u8 blue  = (u8) (x + xOffSet);
+            u8 green = (u8) (y + yOffset);
             *pixel   = ((green << 8) | blue);
             pixel++;
         }

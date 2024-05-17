@@ -6,6 +6,7 @@
 
 #include "types.h"
 #include "ngame.c"
+#include "compiler.h"
 
 #define BUFFER_WIDTH 1280
 #define BUFFER_HEIGHT 720
