@@ -26,7 +26,7 @@ GameOutputSound(game_sound_buffer* soundBuffer, int toneHz)
     int               wavePeriod = soundBuffer->samplesPerSecond / toneHz;
 
     i16* sampleOut = (i16*) soundBuffer->samples;
-    for (DWORD sampleIndex = 0; sampleIndex < soundBuffer->sampleCount; ++sampleIndex)
+    for (u32 sampleIndex = 0; sampleIndex < soundBuffer->sampleCount; ++sampleIndex)
     {
         f32 sineValue   = sinf(tSine);
         i16 sampleValue = (i16) (sineValue * toneVolume);
