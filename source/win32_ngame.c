@@ -43,7 +43,7 @@ typedef struct
     int latencySampleCount;
 } win32_sound_output;
 
-/* the following allow to create a stub for function in the case the library could not be loaded */
+/* the following allows to create a stub for function in the case the library could not be loaded */
 #define X_INPUT_GET_STATE(name) DWORD WINAPI name(DWORD dxUserIndex, XINPUT_STATE* pState)
 typedef X_INPUT_GET_STATE(x_input_get_state);
 X_INPUT_GET_STATE(XInputGetStateStub) { return (0); }
