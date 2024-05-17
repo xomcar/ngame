@@ -5,12 +5,12 @@
 #include <math.h>
 
 #include "types.h"
-#include "ngame.cpp"
+#include "ngame.c"
 
 #define BUFFER_WIDTH 1280
 #define BUFFER_HEIGHT 720
 
-struct win32_offscreen_buffer
+typedef struct
 {
     BITMAPINFO info;
     void*      memory;
@@ -18,19 +18,19 @@ struct win32_offscreen_buffer
     int        height;
     int        pitch;
     int        bytesPerPixel;
-};
+} win32_offscreen_buffer;
 
 global_variable win32_offscreen_buffer gBackBuffer;
 global_variable bool                   gRunning;
 global_variable LPDIRECTSOUNDBUFFER    gSoundBuffer;
 
-struct win32_window_dimension
+typedef struct
 {
     int width;
     int height;
-};
+} win32_window_dimension;
 
-struct win32_sound_output
+typedef struct
 {
     int samplesPerSecond;
     int toneVolume;
@@ -41,7 +41,7 @@ struct win32_sound_output
     int runningSampleIndex;
     f32 tSine;
     int latencySampleCount;
-};
+} win32_sound_output;
 
 /* the following allow to create a stub for function in the case the library could not be loaded */
 #define X_INPUT_GET_STATE(name) DWORD WINAPI name(DWORD dxUserIndex, XINPUT_STATE* pState)
@@ -98,7 +98,7 @@ Win32InitDSound(HWND window, i32 samplesPerSecond, i32 bufferSize)
         LPDIRECTSOUND directSound;
         if (DirectSoundCreate && SUCCEEDED(DirectSoundCreate(0, &directSound, 0)))
         {
-            WAVEFORMATEX waveFormat    = {};
+            WAVEFORMATEX waveFormat    = { 0 };
             waveFormat.wFormatTag      = WAVE_FORMAT_PCM;
             waveFormat.nChannels       = 2;
             waveFormat.nSamplesPerSec  = samplesPerSecond;
@@ -107,16 +107,16 @@ Win32InitDSound(HWND window, i32 samplesPerSecond, i32 bufferSize)
             waveFormat.nAvgBytesPerSec = waveFormat.nSamplesPerSec * waveFormat.nBlockAlign;
             waveFormat.cbSize          = 0;
 
-            if (SUCCEEDED(directSound->SetCooperativeLevel(window, DSSCL_PRIORITY)))
+            if (SUCCEEDED(IDirectSound_SetCooperativeLevel(directSound, window, DSSCL_PRIORITY)))
             {
-                DSBUFFERDESC bufferDescription = {};
+                DSBUFFERDESC bufferDescription = { 0 };
                 bufferDescription.dwSize       = sizeof(bufferDescription);
                 bufferDescription.dwFlags      = DSBCAPS_PRIMARYBUFFER;
                 LPDIRECTSOUNDBUFFER primaryBuffer;
-                if (SUCCEEDED(directSound->CreateSoundBuffer(&bufferDescription, &primaryBuffer, 0)))
+                if (SUCCEEDED(IDirectSound_CreateSoundBuffer(directSound, &bufferDescription, &primaryBuffer, 0)))
                 {
                     OutputDebugStringA("Primary audio buffer created\n");
-                    if (SUCCEEDED(primaryBuffer->SetFormat(&waveFormat)))
+                    if (SUCCEEDED(IDirectSoundBuffer_SetFormat(primaryBuffer, &waveFormat)))
                     {
                         OutputDebugStringA("Primary audio buffer format set\n");
                     }
@@ -131,12 +131,12 @@ Win32InitDSound(HWND window, i32 samplesPerSecond, i32 bufferSize)
                 // TODO: diagnostic
             }
             // create a secondary buffer to write to
-            DSBUFFERDESC bufferDescription  = {};
+            DSBUFFERDESC bufferDescription  = { 0 };
             bufferDescription.dwSize        = sizeof(bufferDescription);
             bufferDescription.dwFlags       = 0;
             bufferDescription.dwBufferBytes = bufferSize;
             bufferDescription.lpwfxFormat   = &waveFormat;
-            if (SUCCEEDED(directSound->CreateSoundBuffer(&bufferDescription, &gSoundBuffer, 0)))
+            if (SUCCEEDED(IDirectSound_CreateSoundBuffer(directSound, &bufferDescription, &gSoundBuffer, 0)))
             {
                 // start playing audio!
                 OutputDebugStringA("Secondary audio buffer created\n");
@@ -155,7 +155,8 @@ Win32FillSoundBuffer(win32_sound_output* soundOutput,
     DWORD region1Size;
     VOID* region2;
     DWORD region2Size;
-    if (SUCCEEDED(gSoundBuffer->Lock(byteToLock, bytesToWrite, &region1, &region1Size, &region2, &region2Size, 0)))
+    if (SUCCEEDED(IDirectSoundBuffer8_Lock(
+            gSoundBuffer, byteToLock, bytesToWrite, &region1, &region1Size, &region2, &region2Size, 0)))
     {
         // TODO: assert region1/region2 size are valid (must be multiple of 32 bit due to 2ch * 16bit)
         DWORD region1SampleCount = region1Size / soundOutput->bytesPerSample;
@@ -178,7 +179,7 @@ Win32FillSoundBuffer(win32_sound_output* soundOutput,
         };
     }
 
-    gSoundBuffer->Unlock(region1, region1Size, region2, region2Size);
+    IDirectSoundBuffer8_Unlock(gSoundBuffer, region1, region1Size, region2, region2Size);
 }
 
 internal void
@@ -188,8 +189,8 @@ Win32ClearBuffer(win32_sound_output* output)
     DWORD region1Size;
     VOID* region2;
     DWORD region2Size;
-    if (SUCCEEDED(
-            gSoundBuffer->Lock(0, output->secondaryBufferSize, &region1, &region1Size, &region2, &region2Size, 0)))
+    if (SUCCEEDED(IDirectSoundBuffer8_Lock(
+            gSoundBuffer, 0, output->secondaryBufferSize, &region1, &region1Size, &region2, &region2Size, 0)))
     {
         // TODO: assert region1/region2 size are valid (must be multiple of 32 bit due to 2ch * 16bit)
         u8* destSample = (u8*) region1;
@@ -203,7 +204,7 @@ Win32ClearBuffer(win32_sound_output* output)
             *destSample++ = 0;
         };
     }
-    gSoundBuffer->Unlock(region1, region1Size, region2, region2Size);
+    IDirectSoundBuffer8_Unlock(gSoundBuffer, region1, region1Size, region2, region2Size);
 }
 
 internal void
@@ -340,7 +341,7 @@ Win32MainWindowCallback(HWND window, UINT message, WPARAM wParameter, LPARAM lPa
 int APIENTRY
 WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR commandLine, int showCode)
 {
-    WNDCLASSA windowClass = {};
+    WNDCLASSA windowClass = { 0 };
     Win32LoadXInput();
     Win32InitVideo(&gBackBuffer, BUFFER_WIDTH, BUFFER_HEIGHT);
 
@@ -375,7 +376,7 @@ WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR commandLine, int showC
             int xOffset = 0;
             int yOffset = 0;
 
-            win32_sound_output soundOutput = {};
+            win32_sound_output soundOutput = { 0 };
 
             soundOutput.samplesPerSecond    = 48000;
             soundOutput.toneHz              = 256;
@@ -386,7 +387,7 @@ WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR commandLine, int showC
             soundOutput.latencySampleCount  = soundOutput.samplesPerSecond / 15;
             Win32InitDSound(Window, soundOutput.samplesPerSecond, soundOutput.secondaryBufferSize);
             Win32ClearBuffer(&soundOutput);
-            gSoundBuffer->Play(0, 0, DSBPLAY_LOOPING);
+            IDirectSoundBuffer8_Play(gSoundBuffer, 0, 0, DSBPLAY_LOOPING);
 
             gRunning = true;
 
@@ -442,7 +443,7 @@ WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR commandLine, int showC
                         yOffset -= rightStickY / 4096;
 
 
-                        XINPUT_VIBRATION vibration = {};
+                        XINPUT_VIBRATION vibration = { 0 };
                         if (a)
                         {
                             vibration.wLeftMotorSpeed  = 60000;
@@ -467,10 +468,10 @@ WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR commandLine, int showC
                 DWORD  byteToLock   = 0;
                 DWORD  bytesToWrite = 0;
                 bool32 soundIsValid = false;
-                if (SUCCEEDED(gSoundBuffer->GetCurrentPosition(&playCursor, &writeCursor)))
+                if (SUCCEEDED(IDirectSoundBuffer_GetCurrentPosition(gSoundBuffer, &playCursor, &writeCursor)))
                 {
-                    DWORD byteToLock = (soundOutput.runningSampleIndex * soundOutput.bytesPerSample)
-                                       % soundOutput.secondaryBufferSize;
+                    byteToLock = (soundOutput.runningSampleIndex * soundOutput.bytesPerSample)
+                                 % soundOutput.secondaryBufferSize;
                     targetCursor = (playCursor + (soundOutput.latencySampleCount * soundOutput.bytesPerSample))
                                    % soundOutput.secondaryBufferSize;
                     if (byteToLock > targetCursor)
@@ -488,12 +489,12 @@ WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR commandLine, int showC
                     soundIsValid = true;
                 }
 
-                game_sound_buffer soundBuffer = {};
+                game_sound_buffer soundBuffer = { 0 };
                 soundBuffer.samplesPerSecond  = soundOutput.samplesPerSecond;
                 soundBuffer.sampleCount       = bytesToWrite / soundOutput.bytesPerSample;
                 soundBuffer.samples           = samples;
 
-                game_offscreen_buffer videoBuffer = {};
+                game_offscreen_buffer videoBuffer = { 0 };
                 videoBuffer.memory                = gBackBuffer.memory;
                 videoBuffer.width                 = gBackBuffer.width;
                 videoBuffer.height                = gBackBuffer.height;

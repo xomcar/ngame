@@ -2,9 +2,12 @@
 #define TYPE_H
 
 #include <stdint.h>
+#include <stdbool.h>
+
 #define local_persist static
 #define global_variable static
 #define internal static
+
 
 typedef uint8_t  u8;
 typedef uint16_t u16;

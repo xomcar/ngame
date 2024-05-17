@@ -9,21 +9,21 @@
 
 // needs timing, input, bitmap to output and sound to use
 
-struct game_offscreen_buffer
+typedef struct
 {
     void* memory;
     int   width;
     int   height;
     int   pitch;
     int   bytesPerPixel;
-};
+} game_offscreen_buffer;
 
-struct game_sound_buffer
+typedef struct
 {
     i16*         samples;
     unsigned int sampleCount;
     unsigned int samplesPerSecond;
-};
+} game_sound_buffer;
 
 internal void
 GameUpdateAndRender(
