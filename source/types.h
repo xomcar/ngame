@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <math.h>
 
 #define local_persist static
 #define global_variable static

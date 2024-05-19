@@ -37,9 +37,26 @@ GameOutputSound(game_sound_buffer* soundBuffer, int toneHz)
 }
 
 internal void
-GameUpdateAndRender(
-    game_offscreen_buffer* videoBuffer, game_sound_buffer* soundBuffer, int xOffset, int yOffset, int toneHz)
+GameUpdateAndRender(game_input* input, game_offscreen_buffer* videoBuffer, game_sound_buffer* soundBuffer)
 {
+    local_persist int toneHz  = 256;
+    local_persist int xOffset = 0;
+    local_persist int yOffset = 0;
+
+    game_controller_input* input0 = &input->controllers[0];
+
+    // input tuning according to analog/digital input
+    if (input0->isAnalog) {}
+    else {}
+
+    if (input0->down.endedDown)
+    {
+        xOffset += 1;
+    }
+
+    toneHz = 256 + (int) (128.0f * (input0->endX));
+    yOffset += (int) (4.0f * (input0->endY));
+
     GameOutputSound(soundBuffer, toneHz);
     RenderGradient(videoBuffer, xOffset, yOffset);
 }
