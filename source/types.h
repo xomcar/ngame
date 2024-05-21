@@ -9,6 +9,16 @@
 #define global_variable static
 #define internal static
 
+#define KILOBYTES(n) ((n)*1024)
+#define MEGABYTES(n) ((KILOBYTES(n))*1024)
+#define GIGABYTES(n) ((MEGABYTES(n))*1024)
+#define TERABYTES(n) ((GIGABYTES(n))*1024)
+
+#ifndef PERFORMANCE
+#define assert(b) if (!(b)) {*(u8*)(0) = 0;}
+#else
+#define assert(b)
+#endif
 
 typedef uint8_t  u8;
 typedef uint16_t u16;

@@ -37,11 +37,16 @@ GameOutputSound(game_sound_buffer* soundBuffer, int toneHz)
 }
 
 internal void
-GameUpdateAndRender(game_input* input, game_offscreen_buffer* videoBuffer, game_sound_buffer* soundBuffer)
+GameUpdateAndRender(game_memory* mem, game_input* input, game_offscreen_buffer* videoBuffer, game_sound_buffer* soundBuffer)
 {
-    local_persist int toneHz  = 256;
-    local_persist int xOffset = 0;
-    local_persist int yOffset = 0;
+
+    game_state *gameState = (game_state*) mem->persistent;    
+    if (!(mem->initialized))
+    {
+        gameState->toneHz = 256;
+        u8* end = &((u8*)(mem->persistent))[mem->scratchSize + mem->persistentSize - 1];
+        *end              = 0xFF;
+    }
 
     game_controller_input* input0 = &input->controllers[0];
 
@@ -51,12 +56,12 @@ GameUpdateAndRender(game_input* input, game_offscreen_buffer* videoBuffer, game_
 
     if (input0->down.endedDown)
     {
-        xOffset += 1;
+        gameState->xOffset += 1;
     }
 
-    toneHz = 256 + (int) (128.0f * (input0->endX));
-    yOffset += (int) (4.0f * (input0->endY));
+    gameState->toneHz = 256 + (int) (128.0f * (input0->endX));
+    gameState->yOffset += (int) (4.0f * (input0->endY));
 
-    GameOutputSound(soundBuffer, toneHz);
-    RenderGradient(videoBuffer, xOffset, yOffset);
+    GameOutputSound(soundBuffer, gameState->toneHz);
+    RenderGradient(videoBuffer, gameState->xOffset, gameState->yOffset);
 }

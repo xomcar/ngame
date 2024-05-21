@@ -11,6 +11,12 @@
 #define BUFFER_WIDTH 1280
 #define BUFFER_HEIGHT 720
 
+#ifdef DEVEL
+#define BASE_ADDR (LPVOID)(TERABYTES((u64)2))
+#else
+#define BASE_ADDR (LPVOID)((u64)0)
+#endif
+
 typedef struct
 {
     BITMAPINFO info;
@@ -292,7 +298,7 @@ Win32MainWindowCallback(HWND window, UINT message, WPARAM wParameter, LPARAM lPa
         case WM_KEYDOWN:
         case WM_KEYUP:
         {
-            u32  vKeyCode = wParameter;
+            WPARAM  vKeyCode = wParameter;
             bool wasDown  = ((lParameter & (1 << 30)) != 0);  // check if previously pressed
             bool isDown   = ((lParameter & (1 << 31)) == 0);  // check if pressed
             if (wasDown != isDown)                            // skip input if key is pressed continously
@@ -401,6 +407,14 @@ WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR commandLine, int showC
 
             i16* samples
                 = (i16*) VirtualAlloc(0, soundOutput.secondaryBufferSize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+
+            // allocate 64MB+4GB
+            game_memory memory = {};
+            memory.persistentSize = MEGABYTES((u64)64);
+            memory.scratchSize = GIGABYTES((u64)4);
+            u64 totalSize      = memory.persistentSize + memory.scratchSize;
+            memory.persistent = VirtualAlloc(BASE_ADDR, totalSize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+            memory.scratch = (u8*)(memory.persistent) + memory.persistentSize;
 
             LARGE_INTEGER lastTick, endTick;
             LARGE_INTEGER ticksFrequency;
@@ -545,7 +559,7 @@ WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR commandLine, int showC
                 videoBuffer.height                = gBackBuffer.height;
                 videoBuffer.pitch                 = gBackBuffer.pitch;
 
-                GameUpdateAndRender(input, &videoBuffer, &soundBuffer);
+                GameUpdateAndRender(&memory, input, &videoBuffer, &soundBuffer);
 
                 if (soundIsValid)
                 {

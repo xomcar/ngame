@@ -69,6 +69,22 @@ struct game_input
     game_controller_input controllers[4];
 };
 
+struct game_state
+{
+    int toneHz;
+    int xOffset;
+    int yOffset;
+};
+
+struct game_memory
+{
+    bool32 initialized;
+    void* persistent;
+    u64   persistentSize;
+    void* scratch;
+    u64   scratchSize;
+};
+
 /*
     Services the platform layer provides to the game:
 */
